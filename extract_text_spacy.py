@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-import regex as re
 
 
 from spacy.lang.en import English
@@ -15,25 +14,23 @@ import sys
 
 NLP = spacy.load('en_core_web_sm')
 
-SYMBOL_FILTER = re.compile("[!@#%:;,\.?\'\"]")
-CLEAN_UP = re.compile("[^a-z]")
-WHITESPCAE_FILTER = re.compile("  *")
 LEMMATIZE = lambda x:" ".join([i.lemma_ for i in NLP(x) if not i.is_stop])
-
-def clean_sentence(x):
-    x = " ".join(WHITESPCAE_FILTER.sub(" "," ".join(CLEAN_UP.sub(" "," ".join(SYMBOL_FILTER.sub("",x.lower()).split())).split())).split())
-    return x
-
-
-
 df = pd.read_csv(f"./{sys.argv[1]}")
-df['comment_text'] = df.comment_text.apply(clean_sentence)
+
 
 lemma = []
+count = 0
+
+print (df.comment_text.isna().sum())
 
 for comment in tqdm(df.comment_text.values):
-    lemma.append(LEMMATIZE(comment))
+    if type(comment) == float:
+        lemma.append("spam")
+    else:
+        comment = LEMMATIZE(comment)
+        lemma.append(comment)
 
+print (count)
 
 df['comment_text'] = lemma
 df.to_csv(f"./{sys.argv[2]}",index=False)
